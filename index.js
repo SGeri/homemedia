@@ -70,7 +70,7 @@ client.on("interactionCreate", async (interaction) => {
 
     await interaction.reply("Keresés...");
 
-    scraperClient.start("Encanto 720p").then(async (movieList) => {
+    scraperClient.start(search).then(async (movieList) => {
       for ([key, value] of Object.entries(movieList)) {
         const { name, downloadUrl } = value.hu.hd[0];
 
