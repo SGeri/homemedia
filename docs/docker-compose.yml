@@ -1,0 +1,18 @@
+version: "3.5"
+
+volumes:
+  jellyfin_config:
+
+services:
+  jellyfin:
+    image: jellyfin/jellyfin
+    container_name: jellyfin
+    network_mode: "host"
+    volumes:
+      - jellyfin_config:/config
+      - /home/USERNAME_REPLACE_THIS/Media:/media
+    restart: "unless-stopped"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Budapest
