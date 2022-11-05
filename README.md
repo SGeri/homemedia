@@ -1,6 +1,6 @@
 <p align="center">
     <br/>
-    <a href="https://github.com/SGeri/homemedia" target="_blank"><img width="200px" src="https://i.imgur.com/3b962uD.png" /></a>
+    <a href="https://github.com/SGeri/homemedia" target="_blank"><img width="800px" src="https://i.imgur.com/3b962uD.png" /></a>
     <h2 align="center">HomeMedia</h2>
     <p align="center">
         A complete solution for your home media needs.
