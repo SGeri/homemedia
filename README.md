@@ -25,7 +25,7 @@
 
 This project utilizes a few packages and services in order to create the best home media experience. Even for everyday users it allows to use a very simple slash command based system on Discord to download movies and shows, categorized them using a special media management system called Jellyfin.
 
-### Felhasznált technológiák
+### Used technologies
 
 The Media Server is made using [Jellyfin](https://jellyfin.org) with [Docker](https://www.docker.com) and for easy container management [Portainer](https://www.portainer.io). There is also a Discord client for easy communcation with the torrent provider.
 
