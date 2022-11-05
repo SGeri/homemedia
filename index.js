@@ -3,38 +3,22 @@ require("dotenv").config();
 const { Client, GatewayIntentBits, REST, Routes } = require("discord.js");
 const nCoreScraper = require("ncore-scraper");
 const WebTorrent = require("webtorrent");
+const commands = require("./commands");
 
 const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
+const torrentClient = new WebTorrent();
+
 const scraperClient = new nCoreScraper({
   user: process.env.NCORE_USERNAME,
   pass: process.env.NCORE_PASSWORD,
-  debug: true,
+  debug: process.env.SCRAPER_DEBUG === "true",
 });
 
-// Commands to register
-const commands = [
-  {
-    name: "download",
-    description:
-      "It downloads a movie / show from nCore and syncs it to a Jellyfin server.",
-    options: [
-      {
-        name: "display",
-        description: "The displayed name on the media server.",
-        type: 3,
-        required: true,
-      },
-      {
-        name: "search",
-        description: "The term used to download the torrent file.",
-        type: 3,
-        required: true,
-      },
-    ],
-  },
-];
+const generateMediaPath = (isSeries) => {
+  return process.env.MEDIA_LOCATION + (isSeries ? "Shows" : "Movies");
+};
 
 // Register commands
 (async () => {
@@ -47,7 +31,7 @@ const commands = [
 
     console.log("Successfully reloaded application (/) commands.");
   } catch (error) {
-    console.error(error);
+    console.error("An error occured:", error);
   }
 })();
 
@@ -60,39 +44,47 @@ client.on("ready", () => {
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
-  // Handle download command
-  if (interaction.commandName === "download") {
-    const displayName = interaction.options.getString("display");
-    const search = interaction.options.getString("search");
+  // Handle list command
+  if (interaction.commandName === "list") {
+    const torrents = torrentClient.torrents;
 
-    if (!displayName || !search)
-      return await interaction.reply("Hiányzó argumentumok.");
+    if (torrents.length === 0)
+      return interaction.reply("Nincs jelenleg futó torrent.");
+
+    const formattedTorrentList = torrents.map(
+      ({ name, progress }) => `- ${name} - (${Math.round(progress * 100)}%)`
+    );
+
+    await interaction.reply(
+      "Jelenleg futó torrentek:\n" + formattedTorrentList
+    );
+  }
+
+  // Handle torrent command
+  if (interaction.commandName === "torrent") {
+    const search = interaction.options.getString("search");
+    const isSeries = interaction.options.getBoolean("is_series");
+
+    if (!search) return await interaction.reply("Hiányzó argumentumok.");
 
     await interaction.reply("Keresés...");
 
-    scraperClient.start("Encanto 720p").then(async (movieList) => {
+    scraperClient.start(search).then(async (movieList) => {
       for ([key, value] of Object.entries(movieList)) {
         const { name, downloadUrl } = value.hu.hd[0];
 
         await interaction.channel.send("Torrent megtalálva: " + name);
 
-        const torrentClient = new WebTorrent({
-          path: "./torrents",
-        });
-
         torrentClient.add(
           downloadUrl,
-          {
-            path: "./torrents",
-          },
+          { path: generateMediaPath(isSeries) },
+
           async function (torrent) {
-            await interaction.channel.send(
-              "Letöltés megkezdése: " + torrent.infoHash
-            );
+            await interaction.channel.send("Letöltés megkezdése: " + name);
 
             torrent.on("done", async function () {
               await interaction.channel.send(
-                "Sikeres letöltés, a fájlok elérhetőek a torrent mappában."
+                `Sikeres letöltés (${name}), a fájlok elérhetőek a torrent mappában.`
               );
             });
           }
@@ -104,6 +96,39 @@ client.on("interactionCreate", async (interaction) => {
       }
     });
   }
+
+  // Handle download command
+  if (interaction.commandName === "download") {
+    const downloadUrl = interaction.options.getString("url");
+    const isSeries = interaction.options.getBoolean("is_series");
+
+    if (!downloadUrl) return await interaction.reply("Hiányzó argumentumok.");
+
+    await interaction.reply("Torrent megtalálva:", downloadUrl);
+
+    torrentClient.add(
+      downloadUrl,
+      { path: generateMediaPath(isSeries) },
+
+      async function (torrent) {
+        await interaction.channel.send("Letöltés megkezdése: " + downloadUrl);
+
+        torrent.on("done", async function () {
+          await interaction.channel.send(
+            `Sikeres letöltés (${downloadUrl}), a fájlok elérhetőek a torrent mappában.`
+          );
+        });
+      }
+    );
+  }
+});
+
+torrentClient.on("error", async function (err) {
+  const generalChannel = await client.channels.fetch(
+    process.env.DISCORD_CHANNEL_ID
+  );
+
+  await generalChannel.send("An error occured:", err);
 });
 
 client.login(process.env.DISCORD_TOKEN);
