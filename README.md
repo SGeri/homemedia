@@ -43,7 +43,7 @@ A short guide of installation can be found [here](https://docs.portainer.io/star
 ### 2. Installation of Jellyfin using docker-compose.yml
 
 Jellyfin is the core of this project and it serves as a Media Management System for the users.
-The docker-compose.yml file for my Jellyfin setup is located in the [docs/docker-compose.yml](a).
+The docker-compose.yml file for my Jellyfin setup is located in the [docs/docker-compose.yml](https://github.com/SGeri/homemedia/blob/main/docs/docker-compose.yml).
 
 ### 3. Setup the Discord application
 
