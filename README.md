@@ -75,4 +75,4 @@ I advise you to use PM2 for deploying NodeJS applications because of how reliabl
 
 ## Final words
 
-If you have any questions or ideas let me know! You can reach me out on Discord (SGeri#0731) or by creating an issue here on Github. I'm not planning on actively continuing and of my side projects but I'll answer as soon as I can!
+If you have any questions or ideas let me know! You can reach me out on Discord (SGeri#0731) or by creating an issue here on Github. I'm not planning on actively continuing any of my side projects but I'll answer as soon as I can!
